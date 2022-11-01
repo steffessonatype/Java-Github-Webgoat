@@ -52,7 +52,7 @@ jobs:
           password: admin1234
           applicationId: Java-Github-Webgoat__steffessonatype
           stage: Build
-          target: ./target/
+          target: .
 
   notify-slack:
     if: github.event_name == 'push' && (success() || failure())
