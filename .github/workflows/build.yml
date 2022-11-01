@@ -26,7 +26,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
+        os: [macos-latest]
         java: [15]
     steps:
       - uses: actions/checkout@v2
@@ -44,6 +44,15 @@ jobs:
           restore-keys: ${{ runner.os }}-m2
       - name: Build with Maven
         run: mvn clean install
+      - name: Nexus IQ Policy Evaluation
+        uses: sonatype-nexus-community/iq-github-action@master
+        with:
+          serverUrl: https://als.pagekite.me/
+          username: admin
+          password: admin1234
+          applicationId: Java-Github-Webgoat__steffessonatype
+          stage: Build
+          target: ./target/
 
   notify-slack:
     if: github.event_name == 'push' && (success() || failure())
