@@ -20,6 +20,9 @@ on:
       - '*.md'
       - 'LICENSE'
       - 'docs/**'
+  
+  #allows you to run manually from actions tab
+  workflow_dispatch:
 
 jobs:
   build:
@@ -43,13 +46,31 @@ jobs:
           key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-m2
       - name: Build with Maven
-        run: mvn clean install
-      - name: Nexus IQ Policy Evaluation
-        uses: sonatype-nexus-community/iq-github-action@master
+        run: mvn clean install -DskipTests
+      - name: Run IQ evaluate action
+        id: evaluate
+        uses: sonatype/actions/evaluate@v1
         with:
-          serverUrl: https://als.pagekite.me/
-          username: admin
-          password: admin1234
-          applicationId: Java-Github-Webgoat__steffessonatype
-          stage: Build
-          target: .
+          iq-server-url: ${{ secrets.iqserverurl }}
+          username: ${{ secrets.username }}
+          password: ${{ secrets.password }}
+          application-id: Java-Github-Webgoat__steffessonatype
+          scan-targets: .
+      # Print out the results
+      - name: Log evaluate action output
+        run: echo "${{ steps.evaluate.outputs.scan-id }} ${{ steps.evaluate.outputs.report-url }}"
+
+      # Fetch the SBOM file associated with the evaluation
+      - name: Fetch SBOM
+        uses: sonatype/actions/fetch-sbom@v1
+        if: ( success() || failure() ) && steps.evaluate.outputs.scan-id 
+        with:
+          iq-server-url: ${{ secrets.iqserverurl }}
+          username: ${{ secrets.username }}
+          password: ${{ secrets.password }}
+          application-id: Java-Github-Webgoat__steffessonatype
+          scan-id: ${{ steps.evaluate.outputs.scan-id }}
+          sbom-standard: cyclonedx
+          sbom-version: 1.5
+          sbom-format: json
+          artifact-name: webgoat-sbom
