@@ -20,6 +20,9 @@ on:
       - '*.md'
       - 'LICENSE'
       - 'docs/**'
+  
+  #allows you to run manually from actions tab
+  workflow_dispatch:
 
 jobs:
   build:
@@ -48,13 +51,26 @@ jobs:
         id: evaluate
         uses: sonatype/actions/evaluate@v1
         with:
-          iq-server-url: https://als.pagekite.me/
-          username: admin
-          password: admin1234
+          iq-server-url: ${{ secrets.iqserverurl }}
+          username: ${{ secrets.username }}
+          password: ${{ secrets.password }}
           application-id: Java-Github-Webgoat__steffessonatype
           scan-targets: .
       # Print out the results
       - name: Log evaluate action output
         run: echo "${{ steps.evaluate.outputs.scan-id }} ${{ steps.evaluate.outputs.report-url }}"
 
-
+      # Fetch the SBOM file associated with the evaluation
+      - name: Fetch SBOM
+        uses: sonatype/actions/fetch-sbom@v1
+        if: ( success() || failure() ) && steps.evaluate.outputs.scan-id 
+        with:
+          iq-server-url: ${{ secrets.iqserverurl }}
+          username: ${{ secrets.username }}
+          password: ${{ secrets.password }}
+          application-id: Java-Github-Webgoat__steffessonatype
+          scan-id: ${{ steps.evaluate.outputs.scan-id }}
+          sbom-standard: cyclonedx
+          sbom-version: 1.5
+          sbom-format: json
+          artifact-name: webgoat-sbom
