@@ -44,12 +44,17 @@ jobs:
           restore-keys: ${{ runner.os }}-m2
       - name: Build with Maven
         run: mvn clean install
-      - name: Nexus IQ Policy Evaluation
-        uses: sonatype-nexus-community/iq-github-action@master
+      - name: Run IQ evaluate action
+        id: evaluate
+        uses: sonatype-nexus-community/iq-github-action@v2.1.0
         with:
-          serverUrl: https://als.pagekite.me/
+          iq-server-url: https://als.pagekite.me/
           username: admin
           password: admin1234
-          applicationId: Java-Github-Webgoat__steffessonatype
-          stage: Build
-          target: .
+          application-id: Java-Github-Webgoat__steffessonatype
+          scan-targets: .
+      # Print out the results
+      - name: Log evaluate action output
+        run: echo "${{ steps.evaluate.outputs.scan-id }} ${{ steps.evaluate.outputs.report-url }}"
+
+
