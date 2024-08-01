@@ -46,9 +46,9 @@ jobs:
         run: mvn clean install -DskipTests
       - name: Run IQ evaluate action
         id: evaluate
-        uses: sonatype-nexus-community/iq-github-action@v2.1.0
+        uses: sonatype/actions/evaluate@v1
         with:
-          serverUrl: https://als.pagekite.me/
+          iq-server-url: https://als.pagekite.me/
           username: admin
           password: admin1234
           application-id: Java-Github-Webgoat__steffessonatype
