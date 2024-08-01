@@ -52,6 +52,7 @@ jobs:
           username: admin
           password: admin1234
           application-id: Java-Github-Webgoat__steffessonatype
+          stage: build
           scan-targets: .
       # Print out the results
       - name: Log evaluate action output
